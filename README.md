@@ -4,6 +4,8 @@
 git clone --recurse-submodules https://github.com/davidgengenbach/p4runtime-benchmark.git
 cd p4runtime-benchmark
 
+./misc/convert_proto.sh
+
 mkdir -p build && cd build
 cmake ..
 make -j`nproc`

@@ -2,7 +2,7 @@
 
 set -eux
 
-ROOT_DIR=$( cd $(dirname "${BASH_SOURCE[0]}")/.. >/dev/null 2>&1 && pwd )
+ROOT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}")/.. >/dev/null 2>&1 && pwd)
 PROTO_OUT="${ROOT_DIR}/third_party/proto_compiled"
 
 main() {
@@ -24,12 +24,11 @@ convert() {
     --plugin=protoc-gen-grpc=$(which grpc_cpp_plugin) \
     --grpc_out ${PROTO_OUT} \
     --cpp_out ${PROTO_OUT} \
-    --proto_path=$(pwd -P) \
-    $(pwd -P)/p4/v1/p4*.proto \
-    $(pwd -P)/p4/config/v1/p4*.proto \
-    $(pwd -P)/google/rpc/*.proto
+    --proto_path=${TMP} \
+    ${TMP}/p4/v1/p4*.proto \
+    ${TMP}/p4/config/v1/p4*.proto \
+    ${TMP}/google/rpc/*.proto
   rm -rf google
-
 }
 
 main
