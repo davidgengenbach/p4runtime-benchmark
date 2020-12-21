@@ -1,13 +1,19 @@
-# Test `p4runtime` packet in performance
+# Benchmark [p4runtime](https://github.com/p4lang/p4runtime.git) packet-in performance
 
 ```
 git clone --recurse-submodules https://github.com/davidgengenbach/p4runtime-benchmark.git
-wget https://github.com/Kitware/CMake/releases/download/v3.19.2/cmake-3.19.2-Linux-x86_64.sh
-bash cmake-3.19.2-Linux-x86_64.sh
-sudo apt-get install pkg-config
+cd p4runtime-benchmark
 
 mkdir -p build && cd build
 cmake ..
 make -j`nproc`
 ./p4runtime_benchmark
+```
+
+## Dependencies
+
+```
+wget https://github.com/Kitware/CMake/releases/download/v3.19.2/cmake-3.19.2-Linux-x86_64.sh
+bash cmake-3.19.2-Linux-x86_64.sh
+sudo apt-get install pkg-config
 ```
