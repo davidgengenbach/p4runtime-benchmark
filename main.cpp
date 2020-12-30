@@ -20,7 +20,7 @@ using StreamChannel = std::shared_ptr<::grpc::ClientReaderWriter<
         ::p4::v1::StreamMessageResponse
 >>;
 
-int getTimestamp() {
+std::time_t getTimestamp() {
     return std::chrono::high_resolution_clock::now().time_since_epoch().count();
 }
 
@@ -35,7 +35,6 @@ void measure(const StreamChannel &channel, unsigned int numMeasurements) {
             throw std::runtime_error("status == false ... why?");
         }
         if (response.has_packet()) {
-            response.PrintDebugString();
             measurements.push_back(new Measurement{
                     .byte_count = response.packet().ByteSize(),
                     .timestamp = getTimestamp()

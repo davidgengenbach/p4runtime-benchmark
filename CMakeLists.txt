@@ -22,20 +22,22 @@ foreach (
     list(APPEND LIBRARIES PkgConfig::${LIB})
 endforeach ()
 
-include_directories(${PROJECT_SOURCE_DIR}/third_party/proto_compiled)
+
+set(PROTO_COMPILED_DIR ${PROJECT_SOURCE_DIR}/third_party/proto_compiled)
+include_directories(${PROTO_COMPILED_DIR})
 add_library(
         protobuf_generated_p4
         STATIC
-        ${PROJECT_SOURCE_DIR}/third_party/proto_compiled/p4/v1/p4runtime.grpc.pb.cc
-        ${PROJECT_SOURCE_DIR}/third_party/proto_compiled/p4/v1/p4runtime.pb.cc
-        ${PROJECT_SOURCE_DIR}/third_party/proto_compiled/p4/v1/p4data.pb.cc
-        ${PROJECT_SOURCE_DIR}/third_party/proto_compiled/p4/v1/p4data.grpc.pb.cc
-        ${PROJECT_SOURCE_DIR}/third_party/proto_compiled/google/rpc/status.grpc.pb.cc
-        ${PROJECT_SOURCE_DIR}/third_party/proto_compiled/google/rpc/status.pb.cc
-        ${PROJECT_SOURCE_DIR}/third_party/proto_compiled/p4/config/v1/p4info.grpc.pb.cc
-        ${PROJECT_SOURCE_DIR}/third_party/proto_compiled/p4/config/v1/p4info.pb.cc
-        ${PROJECT_SOURCE_DIR}/third_party/proto_compiled/p4/config/v1/p4types.grpc.pb.cc
-        ${PROJECT_SOURCE_DIR}/third_party/proto_compiled/p4/config/v1/p4types.pb.cc
+        ${PROTO_COMPILED_DIR}/p4/v1/p4runtime.grpc.pb.cc
+        ${PROTO_COMPILED_DIR}/p4/v1/p4runtime.pb.cc
+        ${PROTO_COMPILED_DIR}/p4/v1/p4data.pb.cc
+        ${PROTO_COMPILED_DIR}/p4/v1/p4data.grpc.pb.cc
+        ${PROTO_COMPILED_DIR}/google/rpc/status.grpc.pb.cc
+        ${PROTO_COMPILED_DIR}/google/rpc/status.pb.cc
+        ${PROTO_COMPILED_DIR}/p4/config/v1/p4info.grpc.pb.cc
+        ${PROTO_COMPILED_DIR}/p4/config/v1/p4info.pb.cc
+        ${PROTO_COMPILED_DIR}/p4/config/v1/p4types.grpc.pb.cc
+        ${PROTO_COMPILED_DIR}/p4/config/v1/p4types.pb.cc
 )
 
 add_executable(
