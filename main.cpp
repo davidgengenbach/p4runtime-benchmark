@@ -6,7 +6,7 @@
 #include <fstream>
 
 std::string P4RUNTIME_ADDRESS = "localhost:28000";
-unsigned int NUM_MEASUREMENTS = 50000;
+unsigned int NUM_MEASUREMENTS = 1000000;
 
 struct Measurement {
     int byte_count;
