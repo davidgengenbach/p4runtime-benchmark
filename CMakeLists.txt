@@ -9,7 +9,6 @@ find_package(PkgConfig REQUIRED)
 list(
         APPEND
         LIBRARIES
-        "grpc++_reflection -Wl,--as-needed"
         protobuf_generated_p4
 )
 
