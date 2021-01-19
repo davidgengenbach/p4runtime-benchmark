@@ -1,3 +1,5 @@
+logs/
+model_0.log
 third_party/proto_compiled
 venv/
 .vagrant/
