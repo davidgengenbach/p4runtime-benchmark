@@ -50,8 +50,8 @@ foreach (
     message(${EXECUTABLE})
     add_executable(
             ${EXECUTABLE}
-            ${EXECUTABLE}.cpp
-            include/utils.h)
+            src/${EXECUTABLE}.cpp
+    )
     target_link_libraries(
             ${EXECUTABLE}
             ${LIBRARIES}
