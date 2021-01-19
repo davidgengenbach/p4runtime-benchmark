@@ -4,6 +4,8 @@
 #include <ctime>
 #include <iostream>
 #include <fstream>
+#include <chrono>
+#include <thread>
 
 std::string P4RUNTIME_ADDRESS = "localhost:28000";
 unsigned int NUM_MEASUREMENTS = 2000;
@@ -55,11 +57,18 @@ void measure(std::unique_ptr<p4::v1::P4Runtime::Stub> client, unsigned int numMe
         if (measurements.size() % 100 == 0) {
             std::cout << "\tMeasurement: " << measurements.size() << "/" << numMeasurements << std::endl;
         }
+
+        auto start = getTimestamp();
         auto status = client->Write(&ctx, request, &response);
-        response.PrintDebugString();
+        auto end = getTimestamp();
+        auto duration = end - start;
+
         measurements.push_back(new Measurement{
-                .timestamp = getTimestamp()
+                .timestamp = duration
         });
+
+        // Sleep a little to allow switch to process entries
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
 }
