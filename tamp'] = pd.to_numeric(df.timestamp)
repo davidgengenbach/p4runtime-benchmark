@@ -1,0 +1,61 @@
+[1;33mdiff --git a/CMakeLists.txt b/CMakeLists.txt[m
+[1;33mindex 660d3db..05e6015 100644[m
+[1;33m--- a/CMakeLists.txt[m
+[1;33m+++ b/CMakeLists.txt[m
+[36m@@ -40,12 +40,19 @@[m [madd_library([m
+         ${PROTO_COMPILED_DIR}/p4/config/v1/p4types.pb.cc[m
+ )[m
+ [m
+[1;31m-add_executable([m
+[1;31m-        p4runtime_benchmark[m
+[1;31m-        main.cpp[m
+[1;31m-)[m
+ [m
+[1;31m-target_link_libraries([m
+[1;31m-        p4runtime_benchmark[m
+[1;31m-        ${LIBRARIES}[m
+[1;31m-)[m
+\ No newline at end of file[m
+[1;32m+[m[1;32mforeach ([m
+[1;32m+[m[1;32m        EXECUTABLE[m
+[1;32m+[m[1;32m        benchmark_packet_in[m
+[1;32m+[m[1;32m        benchmark_write[m
+[1;32m+[m[1;32m)[m
+[1;32m+[m[1;32m    message(${EXECUTABLE})[m
+[1;32m+[m[1;32m    add_executable([m
+[1;32m+[m[1;32m            ${EXECUTABLE}[m
+[1;32m+[m[1;32m            ${EXECUTABLE}.cpp[m
+[1;32m+[m[1;32m    )[m
+[1;32m+[m[1;32m    target_link_libraries([m
+[1;32m+[m[1;32m            ${EXECUTABLE}[m
+[1;32m+[m[1;32m            ${LIBRARIES}[m
+[1;32m+[m[1;32m    )[m
+[1;32m+[m[1;32mendforeach ()[m
+[1;33mdiff --git a/evaluation/Untitled.ipynb b/evaluation/Untitled.ipynb[m
+[1;33mindex f293a30..089f2ba 100644[m
+[1;33m--- a/evaluation/Untitled.ipynb[m
+[1;33m+++ b/evaluation/Untitled.ipynb[m
+[36m@@ -47,6 +47,23 @@[m
+     "    f'{speed_in_megabits_per_second:.0f} Mbit/s'\n",[m
+     ")"[m
+    ][m
+[1;32m+[m[1;32m  },[m
+[1;32m+[m[1;32m  {[m
+[1;32m+[m[1;32m   "cell_type": "code",[m
+[1;32m+[m[1;32m   "execution_count": null,[m
+[1;32m+[m[1;32m   "metadata": {},[m
+[1;32m+[m[1;32m   "outputs": [],[m
+[1;32m+[m[1;32m   "source": [[m
+[1;32m+[m[1;32m    "FILE = \"results/benchmark_write.txt\"\n",[m
+[1;32m+[m[1;32m    "#FILE = '../cmake-build-debug/measurement.txt'\n",[m
+[1;32m+[m[1;32m    "\n",[m
+[1;32m+[m[1;32m    "import pandas as pd\n",[m
+[1;32m+[m[1;32m    "\n",[m
+[1;32m+[m[1;32m    "df = pd.read_csv(FILE, header=None).rename(columns={0: 'timestamp'})\n",[m
+[1;32m+[m[1;32m    "durations = df.diff().dropna() / 1000 / 1000\n",[m
+[1;32m+[m[1;32m    "# In milliseconds\n",[m
+[1;32m+[m[1;32m    "durations"[m
+[1;32m+[m[1;32m   ][m
+   }[m
+  ],[m
+  "metadata": {[m

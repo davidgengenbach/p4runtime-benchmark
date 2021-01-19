@@ -6,10 +6,9 @@
 #include <fstream>
 
 std::string P4RUNTIME_ADDRESS = "localhost:28000";
-unsigned int NUM_MEASUREMENTS = 1000000;
+unsigned int NUM_MEASUREMENTS = 2000;
 
 struct Measurement {
-    int byte_count;
     std::time_t timestamp;
 };
 
@@ -24,25 +23,45 @@ std::time_t getTimestamp() {
     return std::chrono::high_resolution_clock::now().time_since_epoch().count();
 }
 
-void measure(const StreamChannel &channel, unsigned int numMeasurements) {
-    p4::v1::StreamMessageResponse response;
+void measure(std::unique_ptr<p4::v1::P4Runtime::Stub> client, unsigned int numMeasurements) {
+    p4::v1::WriteResponse response;
     while (measurements.size() <= numMeasurements) {
+        grpc::ClientContext ctx;
+        p4::v1::WriteRequest request;
+        request.set_device_id(1);
+        auto *electionId = request.mutable_election_id();
+        electionId->set_low(0);
+        electionId->set_high(1);
+
+        auto *update = request.mutable_updates()->Add();
+        update->set_type(p4::v1::Update_Type_INSERT);
+        auto entity = update->mutable_entity();
+        auto tableEntry = entity->mutable_table_entry();
+        tableEntry->set_table_id(34173001);
+        tableEntry->mutable_action()->mutable_action()->set_action_id(24752669);
+        auto match = tableEntry->mutable_match()->Add();
+        match->set_field_id(7);
+        auto *fieldMatch = new p4::v1::FieldMatch_Ternary();
+
+        tableEntry->set_priority(measurements.size() + 1);
+
+        char value[3];
+        value[0] = 1;
+        value[1] = 1;
+        fieldMatch->set_value(value);
+        fieldMatch->set_mask(value);
+        match->set_allocated_ternary(fieldMatch);
+
         if (measurements.size() % 100 == 0) {
             std::cout << "\tMeasurement: " << measurements.size() << "/" << numMeasurements << std::endl;
         }
-        auto status = channel->Read(&response);
-        if (!status) {
-            throw std::runtime_error("status == false ... why?");
-        }
-        if (response.has_packet()) {
-            measurements.push_back(new Measurement{
-                    .byte_count = response.packet().ByteSize(),
-                    .timestamp = getTimestamp()
-            });
-        } else {
-            response.PrintDebugString();
-        }
+        auto status = client->Write(&ctx, request, &response);
+        response.PrintDebugString();
+        measurements.push_back(new Measurement{
+                .timestamp = getTimestamp()
+        });
     }
+
 }
 
 void arbitrateAndMeasure(
@@ -66,7 +85,7 @@ void arbitrateAndMeasure(
         throw std::runtime_error("Could not arbitrate");
     }
     std::cout << "Starting to listen for " << NUM_MEASUREMENTS << " packets" << std::endl;
-    measure(channel, numMeasurements);
+    measure(std::move(client), numMeasurements);
     ctx.TryCancel();
     channel->Finish();
 }
@@ -75,7 +94,7 @@ void saveMeasurements(const std::string &filename) {
     std::ofstream measurementFile(filename);
     if (measurementFile.is_open()) {
         for (const auto *measurement: measurements) {
-            measurementFile << measurement->timestamp << "," << measurement->byte_count << "\n";
+            measurementFile << measurement->timestamp << "\n";
         }
         measurementFile.close();
     }
@@ -87,7 +106,7 @@ int main() {
     auto client = p4::v1::P4Runtime::NewStub(channel);
 
     arbitrateAndMeasure(std::move(client), NUM_MEASUREMENTS);
-    saveMeasurements("measurement.txt");
+    saveMeasurements("benchmark_write.txt");
 
     return 0;
 }

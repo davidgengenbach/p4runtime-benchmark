@@ -40,12 +40,19 @@ add_library(
         ${PROTO_COMPILED_DIR}/p4/config/v1/p4types.pb.cc
 )
 
-add_executable(
-        p4runtime_benchmark
-        main.cpp
-)
 
-target_link_libraries(
-        p4runtime_benchmark
-        ${LIBRARIES}
+foreach (
+        EXECUTABLE
+        benchmark_packet_in
+        benchmark_write
 )
+    message(${EXECUTABLE})
+    add_executable(
+            ${EXECUTABLE}
+            ${EXECUTABLE}.cpp
+    )
+    target_link_libraries(
+            ${EXECUTABLE}
+            ${LIBRARIES}
+    )
+endforeach ()
