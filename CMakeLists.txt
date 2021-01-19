@@ -40,6 +40,7 @@ add_library(
         ${PROTO_COMPILED_DIR}/p4/config/v1/p4types.pb.cc
 )
 
+include_directories(include)
 
 foreach (
         EXECUTABLE
@@ -50,7 +51,7 @@ foreach (
     add_executable(
             ${EXECUTABLE}
             ${EXECUTABLE}.cpp
-    )
+            include/utils.h)
     target_link_libraries(
             ${EXECUTABLE}
             ${LIBRARIES}
