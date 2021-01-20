@@ -1,15 +1,7 @@
 #include "utils.h"
 
-struct Measurement {
-    std::time_t timestamp;
 
-    std::string line() const {
-        return std::to_string(timestamp);
-    }
-};
-
-
-std::vector<Measurement *> measure(
+std::vector<long> measure(
         const std::shared_ptr<p4::v1::P4Runtime::Stub> &client,
         unsigned int numMeasurements,
         bool priorityLowToHigh,
@@ -20,7 +12,7 @@ std::vector<Measurement *> measure(
         int electionLow = 0,
         int electionHigh = 1
 ) {
-    std::vector<Measurement *> measurements;
+    std::vector<long> measurements;
     p4::v1::WriteResponse response;
 
     p4::v1::WriteRequest request;
@@ -61,9 +53,7 @@ std::vector<Measurement *> measure(
             printStatusError(status);
             throw std::runtime_error("Could not write entry. Stopping");
         }
-        measurements.push_back(new Measurement{
-                .timestamp = getTimestamp() - start
-        });
+        measurements.push_back(getTimestamp() - start);
 
         // Sleep a little to allow switch to process entries
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -71,15 +61,20 @@ std::vector<Measurement *> measure(
     return measurements;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    argh::parser cmdl(argc, argv);
+    auto numMeasurements = getNumMeasurements(cmdl);
+
     auto client = getStub();
+    for (bool priorityLowToHigh : {false, true}) {
+        deleteAllTableEntries(client);
+        auto measurements = measure(client, numMeasurements, priorityLowToHigh);
+        json j = {
+                {"priorityLowToHigh", priorityLowToHigh},
+                {"measurements",      measurements}
+        };
+        saveJSON(j, "benchmark_write." + std::string(priorityLowToHigh ? "low_to_high" : "high_to_low"));
+    }
     deleteAllTableEntries(client);
-
-    auto priorityLowToHigh = false;
-    auto measurements = measure(client, 1000, priorityLowToHigh);
-
-    deleteAllTableEntries(client);
-    auto filename = "benchmark_write." + std::to_string(getTimestamp()) + ".csv";
-    saveTimestamps(filename, measurements, "duration_in_nanoseconds");
     return 0;
 }

@@ -3,6 +3,7 @@ project(p4runtime_benchmark)
 
 set(CMAKE_CXX_STANDARD 14)
 
+include(third_party/libs.cmake)
 
 find_package(PkgConfig REQUIRED)
 
@@ -41,6 +42,7 @@ add_library(
 )
 
 include_directories(include)
+include_directories(third_party/adishavit_argh)
 
 foreach (
         EXECUTABLE
@@ -55,5 +57,6 @@ foreach (
     target_link_libraries(
             ${EXECUTABLE}
             ${LIBRARIES}
+            nlohmann_json::nlohmann_json
     )
 endforeach ()

@@ -9,6 +9,10 @@
 #include <fstream>
 #include <chrono>
 #include <thread>
+#include <nlohmann/json.hpp>
+#include "argh.h"
+
+using json = nlohmann::json;
 
 using StreamChannel = std::shared_ptr<::grpc::ClientReaderWriter<
         ::p4::v1::StreamMessageRequest,
@@ -18,6 +22,10 @@ using Client = std::shared_ptr<p4::v1::P4Runtime::Stub>;
 
 std::time_t getTimestamp() {
     return std::chrono::high_resolution_clock::now().time_since_epoch().count();
+}
+
+long getTimestampLowPrecision() {
+    return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 StreamChannel streamChannel;
@@ -70,7 +78,7 @@ std::shared_ptr<p4::v1::P4Runtime::Stub> getStub(const std::string &address = "l
 }
 
 std::vector<p4::v1::TableEntry> getTableEntries(
-        const Client& client,
+        const Client &client,
         uint32_t tableId = 34173001
 ) {
     grpc::ClientContext ctx;
@@ -99,7 +107,7 @@ void printStatusError(const grpc::Status &status) {
 
 grpc::Status deleteTableEntry(
         const Client &client,
-        const p4::v1::TableEntry& tableEntry
+        const p4::v1::TableEntry &tableEntry
 ) {
     grpc::ClientContext ctx;
     p4::v1::WriteRequest request;
@@ -126,6 +134,26 @@ void deleteAllTableEntries(
             throw std::runtime_error("Could not delete table entry: " + tableEntry.DebugString());
         }
     }
+}
+
+void saveJSON(json &d, const std::string &filename_prefix, bool timestamped = true) {
+    auto filename = filename_prefix;
+    if (timestamped) {
+        filename += "." + std::to_string(getTimestampLowPrecision());
+    }
+    filename += ".json";
+
+    d["timestamp"] = getTimestampLowPrecision();
+
+    std::ofstream measurementFile(filename);
+    measurementFile << d.dump(4);
+    measurementFile.close();
+}
+
+unsigned int getNumMeasurements(const argh::parser cmdl) {
+    unsigned int numMeasurements;
+    cmdl("num_measurements", 1000) >> numMeasurements;
+    return numMeasurements;
 }
 
 

@@ -2,14 +2,10 @@
 
 struct Measurement {
     int byte_count;
-    std::time_t timestamp;
-
-    std::string line() const {
-        return std::to_string(timestamp) + "," + std::to_string(byte_count);
-    }
+    int timestamp;
 };
 
-std::vector<Measurement *> measurements;
+std::vector<json> measurements;
 
 void measure(const StreamChannel &channel, unsigned int numMeasurements) {
     p4::v1::StreamMessageResponse response;
@@ -23,19 +19,23 @@ void measure(const StreamChannel &channel, unsigned int numMeasurements) {
             throw std::runtime_error("status == false ... why?");
         }
         if (response.has_packet()) {
-            measurements.push_back(new Measurement{
-                    .byte_count = response.packet().ByteSize(),
-                    .timestamp = getTimestamp()
-            });
+            measurements.push_back({
+                                           {"byte_count", response.packet().ByteSize()},
+                                           {"timestamp",  getTimestamp()}
+                                   });
         } else {
             response.PrintDebugString();
         }
     }
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    argh::parser cmdl(argc, argv);
+    auto numMeasurements = getNumMeasurements(cmdl);
+
     auto client = getStub();
-    measure(streamChannel, 10000);
-    saveTimestamps("benchmark_packet_in.txt", measurements, "timestamp,byte_count");
+    measure(streamChannel, numMeasurements);
+    json j = {{"measurements", measurements}};
+    saveJSON(j, "benchmark_packet_in");
     return 0;
 }
