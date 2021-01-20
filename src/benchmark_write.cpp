@@ -8,9 +8,8 @@ struct Measurement {
     }
 };
 
-std::vector<Measurement *> measurements;
 
-void measure(
+std::vector<Measurement *> measure(
         const std::shared_ptr<p4::v1::P4Runtime::Stub> &client,
         unsigned int numMeasurements,
         uint32_t tableId = 34173001,
@@ -20,6 +19,7 @@ void measure(
         int electionLow = 0,
         int electionHigh = 1
 ) {
+    std::vector<Measurement *> measurements;
     p4::v1::WriteResponse response;
 
     p4::v1::WriteRequest request;
@@ -50,7 +50,7 @@ void measure(
             std::cout << "Measurement: " << measurements.size() << "/" << numMeasurements << std::endl;
         }
         grpc::ClientContext ctx;
-        tableEntry->set_priority(measurements.size() + 1);
+        tableEntry->set_priority(numMeasurements - measurements.size() + 1);
         auto start = getTimestamp();
         auto status = client->Write(&ctx, request, &response);
         if (!status.ok()) {
@@ -62,15 +62,17 @@ void measure(
         });
 
         // Sleep a little to allow switch to process entries
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
+    return measurements;
 }
 
 int main() {
     auto client = getStub();
     deleteAllTableEntries(client);
-    measure(client, 1000);
+    auto measurements = measure(client, 1000);
     deleteAllTableEntries(client);
-    saveTimestamps("benchmark_write.txt", measurements, "duration_in_nanoseconds");
+    auto filename = "benchmark_write." + std::to_string(getTimestamp()) + ".csv";
+    saveTimestamps(filename, measurements, "duration_in_nanoseconds");
     return 0;
 }
