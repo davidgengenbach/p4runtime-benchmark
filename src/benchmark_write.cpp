@@ -12,6 +12,7 @@ struct Measurement {
 std::vector<Measurement *> measure(
         const std::shared_ptr<p4::v1::P4Runtime::Stub> &client,
         unsigned int numMeasurements,
+        bool priorityLowToHigh,
         uint32_t tableId = 34173001,
         uint32_t actionId = 24752669,
         uint32_t fieldId = 7,
@@ -50,7 +51,10 @@ std::vector<Measurement *> measure(
             std::cout << "Measurement: " << measurements.size() << "/" << numMeasurements << std::endl;
         }
         grpc::ClientContext ctx;
-        tableEntry->set_priority(numMeasurements - measurements.size() + 1);
+
+        auto priority = priorityLowToHigh ? measurements.size() + 1 : numMeasurements - measurements.size() + 1;
+
+        tableEntry->set_priority(priority);
         auto start = getTimestamp();
         auto status = client->Write(&ctx, request, &response);
         if (!status.ok()) {
@@ -70,7 +74,10 @@ std::vector<Measurement *> measure(
 int main() {
     auto client = getStub();
     deleteAllTableEntries(client);
-    auto measurements = measure(client, 1000);
+
+    auto priorityLowToHigh = false;
+    auto measurements = measure(client, 1000, priorityLowToHigh);
+
     deleteAllTableEntries(client);
     auto filename = "benchmark_write." + std::to_string(getTimestamp()) + ".csv";
     saveTimestamps(filename, measurements, "duration_in_nanoseconds");
