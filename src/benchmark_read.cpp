@@ -65,6 +65,7 @@ int main(int argc, char *argv[]) {
         p4::v1::WriteRequest request = getTableEntryWriteRequest();
         auto status = client->Write(&ctx, request, &response);
         if (!status.ok()) {
+            printStatusError(status);
             throw std::runtime_error("Could not write entry");
         }
     }

@@ -193,7 +193,7 @@ p4::v1::WriteRequest getTableEntryWriteRequest(
 }
 
 p4::v1::TableEntry* getTableEntry(p4::v1::WriteRequest request, int index = 0) {
-    return request.mutable_updates()->at(0).mutable_entity()->mutable_table_entry();
+    return request.mutable_updates()->Mutable(index)->mutable_entity()->mutable_table_entry();
 }
 
 
