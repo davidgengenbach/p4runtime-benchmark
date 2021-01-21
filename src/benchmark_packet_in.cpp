@@ -9,7 +9,7 @@ std::vector<json> measurements;
 
 void measure(const StreamChannel &channel, unsigned int numMeasurements) {
     p4::v1::StreamMessageResponse response;
-    while (measurements.size() <= numMeasurements) {
+    while (measurements.size() < numMeasurements) {
         if (measurements.size() % 100 == 0) {
             std::cout << "\tMeasurement: " << measurements.size() << "/" << numMeasurements << std::endl;
         }

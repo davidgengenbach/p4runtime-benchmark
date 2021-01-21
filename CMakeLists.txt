@@ -48,6 +48,7 @@ foreach (
         EXECUTABLE
         benchmark_packet_in
         benchmark_write
+        benchmark_read
 )
     message(${EXECUTABLE})
     add_executable(

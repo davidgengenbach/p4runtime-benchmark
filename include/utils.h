@@ -25,7 +25,8 @@ std::time_t getTimestamp() {
 }
 
 long getTimestampLowPrecision() {
-    return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    return std::chrono::duration_cast<std::chrono::seconds>(
+            std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 StreamChannel streamChannel;
@@ -150,10 +151,49 @@ void saveJSON(json &d, const std::string &filename_prefix, bool timestamped = tr
     measurementFile.close();
 }
 
-unsigned int getNumMeasurements(const argh::parser cmdl) {
+unsigned int getNumMeasurements(const argh::parser& cmdl) {
     unsigned int numMeasurements;
     cmdl("num_measurements", 1000) >> numMeasurements;
     return numMeasurements;
+}
+
+p4::v1::WriteRequest getTableEntryWriteRequest(
+        uint32_t tableId = 34173001,
+        uint32_t actionId = 24752669,
+        uint32_t fieldId = 7,
+        int deviceId = 1,
+        int electionLow = 0,
+        int electionHigh = 1
+) {
+    p4::v1::WriteRequest request;
+    request.set_device_id(deviceId);
+    auto *electionId = request.mutable_election_id();
+    electionId->set_low(electionLow);
+    electionId->set_high(electionHigh);
+
+    auto *update = request.mutable_updates()->Add();
+    update->set_type(p4::v1::Update_Type_INSERT);
+    auto entity = update->mutable_entity();
+    auto tableEntry = entity->mutable_table_entry();
+    tableEntry->set_table_id(tableId);
+    tableEntry->mutable_action()->mutable_action()->set_action_id(actionId);
+    tableEntry->set_priority(1);
+    auto match = tableEntry->mutable_match()->Add();
+    match->set_field_id(fieldId);
+    auto *fieldMatch = new p4::v1::FieldMatch_Ternary();
+
+    char value[2];
+    value[0] = 1;
+    value[1] = 1;
+    fieldMatch->set_value(value);
+    fieldMatch->set_mask(value);
+    match->set_allocated_ternary(fieldMatch);
+
+    return request;
+}
+
+p4::v1::TableEntry* getTableEntry(p4::v1::WriteRequest request, int index = 0) {
+    return request.mutable_updates()->at(0).mutable_entity()->mutable_table_entry();
 }
 
 
