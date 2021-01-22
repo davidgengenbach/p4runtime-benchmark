@@ -15,37 +15,30 @@ std::vector<long> measure(
         }
         grpc::ClientContext ctx;
         p4::v1::ReadRequest request;
-        request.set_device_id(1);
+        request.set_device_id(DEVICE_ID);
 
         p4::v1::Entity *entity = request.mutable_entities()->Add();
-
-        auto *tableEntry = entity->mutable_table_entry();
-        tableEntry->set_table_id(34173001);
-        tableEntry->mutable_counter_data()->set_byte_count(0);
-        tableEntry->mutable_counter_data()->set_packet_count(0);
-
-        //auto &tableEntry = tableEntries.at(0);
-        //entity->mutable_table_entry()->CopyFrom(tableEntry);
-        //entity->mutable_table_entry()->mutable_counter_data()->set_byte_count(1);
-        //entity->mutable_table_entry()->mutable_counter_data()->set_packet_count(1);
-
-        //auto *directCounter = entity->mutable_direct_counter_entry();
-        //directCounter->mutable_table_entry()->set_table_id(0);
-
+        entity->mutable_table_entry()->CopyFrom(tableEntries.at(0));
+        //entity->mutable_table_entry()->set_table_id(ENTITY_TABLE_PUNT_TABLE_ID);
+        entity->mutable_table_entry()->mutable_counter_data();
 
         p4::v1::ReadResponse response;
-
         auto start = getTimestamp();
         auto reader = client->Read(&ctx, request);
 
         int counter = 0;
         while (reader->Read(&response)) {
-            if (response.entities_size() != 0) {
-                counter++;
+            for (const auto &e: response.entities()) {
+                if (e.table_entry().counter_data().byte_count() != 0) {
+                    counter++;
+                }
             }
         }
+        reader->Finish();
         if (counter == 0) {
-            throw std::runtime_error("No table entries read. Exiting");
+            std::cerr << "Could not find any counter_data. Retrying" << std::endl;
+            std::this_thread::sleep_for (std::chrono::seconds(1));
+            continue;
         }
         measurements.push_back(getTimestamp() - start);
     }
@@ -54,12 +47,12 @@ std::vector<long> measure(
 
 int main(int argc, char *argv[]) {
     argh::parser cmdl(argc, argv);
+    auto deleteAndInsertEntry = true;
     auto numMeasurements = getNumMeasurements(cmdl);
 
     auto client = getStub();
-    deleteAllTableEntries(client);
-
-    if (true) {
+    if (deleteAndInsertEntry) {
+        deleteAllTableEntries(client);
         grpc::ClientContext ctx;
         p4::v1::WriteResponse response;
         p4::v1::WriteRequest request = getTableEntryWriteRequest();

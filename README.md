@@ -32,3 +32,36 @@ git clone --depth 1 --recurse-submodules https://github.com/emmericp/MoonGen.git
 cd MoonGen
 ./build.sh
 ```
+
+## Notes
+```
+table_entry['SwitchIngress.punt_table'].read(print)
+table_entry['SwitchIngress.punt_table'].read(lambda x: x.delete())
+    # set_egress_port_static
+    # clone_to_cpu
+te = table_entry['SwitchIngress.punt_table'](action='set_egress_port_static') 
+te.priority = 1
+te.match['ig_intr_md.ingress_port'] = 0
+te.insert()
+
+all_te = table_entry['SwitchIngress.punt_table']; all_te.counter_data; all_te.read(print)
+all_te = table_entry['SwitchIngress.punt_table']
+all_te.counter_data
+for te in all_te.read():
+    te = next(te.read())
+    if te.counter_data.byte_count == 0: continue
+    print(te)
+
+
+- CPU load, detection time as function of # seeds
+    - Hardware
+    - How many Seeds can we create realistically
+- How long does FARM need to mitigate in practice
+- How do we find a distributed use-case which is comparable?
+
+for iteration in range(170):
+    te = table_entry['SwitchIngress.punt_table'](action='set_egress_port_static') 
+    te.priority = iteration + 1
+    te.match['ig_intr_md.ingress_port'] = str(iteration)
+    te.insert()
+```
