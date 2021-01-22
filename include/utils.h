@@ -23,7 +23,7 @@ using Client = std::shared_ptr<p4::v1::P4Runtime::Stub>;
 
 auto DEVICE_ID = 1;
 auto ENTITY_TABLE_PUNT_TABLE_ID = 34173001;
-auto ENTITY_MATCH_FIELD_ID = 7;
+auto ENTITY_MATCH_FIELD_ID = 1;
 auto ENTITY_ACTION_ID = 24752669;
 
 std::time_t getTimestamp() {
@@ -190,8 +190,8 @@ p4::v1::WriteRequest getTableEntryWriteRequest(
     match->set_field_id(fieldId);
     auto *fieldMatch = new p4::v1::FieldMatch_Ternary();
 
-    unsigned char value[2] = {0, static_cast<unsigned char>(port)};
-    unsigned char mask[2] = {0, 255};
+    unsigned char value[2] = {0x08, 0};
+    unsigned char mask[2] = {255, 255};
     auto size = 2;
     fieldMatch->set_value(static_cast<char *>(static_cast<void *>(value)), size);
     fieldMatch->set_mask(static_cast<char *>(static_cast<void *>(mask)), size);
