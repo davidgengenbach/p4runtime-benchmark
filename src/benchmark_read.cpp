@@ -18,8 +18,8 @@ std::vector<long> measure(
         request.set_device_id(DEVICE_ID);
 
         p4::v1::Entity *entity = request.mutable_entities()->Add();
-        entity->mutable_table_entry()->CopyFrom(tableEntries.at(0));
-        //entity->mutable_table_entry()->set_table_id(ENTITY_TABLE_PUNT_TABLE_ID);
+        //entity->mutable_table_entry()->CopyFrom(tableEntries.at(0));
+        entity->mutable_table_entry()->set_table_id(ENTITY_TABLE_PUNT_TABLE_ID);
         entity->mutable_table_entry()->mutable_counter_data();
 
         p4::v1::ReadResponse response;

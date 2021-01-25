@@ -44,6 +44,8 @@ add_library(
 include_directories(include)
 include_directories(third_party/adishavit_argh)
 
+find_package (Threads)
+
 foreach (
         EXECUTABLE
         benchmark_packet_in
@@ -59,5 +61,6 @@ foreach (
             ${EXECUTABLE}
             ${LIBRARIES}
             nlohmann_json::nlohmann_json
+            ${CMAKE_THREAD_LIBS_INIT}
     )
 endforeach ()

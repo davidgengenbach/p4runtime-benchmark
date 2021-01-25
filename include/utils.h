@@ -23,7 +23,7 @@ using Client = std::shared_ptr<p4::v1::P4Runtime::Stub>;
 
 auto DEVICE_ID = 1;
 auto ENTITY_TABLE_PUNT_TABLE_ID = 34173001;
-auto ENTITY_MATCH_FIELD_ID = 1;
+auto ENTITY_MATCH_FIELD_ID = 7;
 auto ENTITY_ACTION_ID = 24752669;
 
 std::time_t getTimestamp() {
@@ -80,10 +80,17 @@ StreamChannel arbitrate(
     return StreamChannel(std::move(channel));
 }
 
+void readFromStreamChannel() {
+    p4::v1::StreamMessageResponse response;
+    streamChannel->Read(&response);
+    response.PrintDebugString();
+}
+
 std::shared_ptr<p4::v1::P4Runtime::Stub> getStub(const std::string &address = "localhost:28000") {
     auto channel = grpc::CreateChannel(address, grpc::InsecureChannelCredentials());
     auto client = std::shared_ptr<p4::v1::P4Runtime::Stub>(std::move(p4::v1::P4Runtime::NewStub(channel)));
     streamChannel = arbitrate(client);
+    new std::thread(readFromStreamChannel);
     return client;
 }
 
@@ -177,7 +184,7 @@ p4::v1::WriteRequest getTableEntryWriteRequest(
     electionId->set_low(electionLow);
     electionId->set_high(electionHigh);
 
-    unsigned int port = 0;
+    //unsigned int port = 0;
 
     auto *update = request.mutable_updates()->Add();
     update->set_type(p4::v1::Update_Type_INSERT);
@@ -190,8 +197,8 @@ p4::v1::WriteRequest getTableEntryWriteRequest(
     match->set_field_id(fieldId);
     auto *fieldMatch = new p4::v1::FieldMatch_Ternary();
 
-    unsigned char value[2] = {0x08, 0};
-    unsigned char mask[2] = {255, 255};
+    unsigned char value[2] = {0, 160};
+    unsigned char mask[2] = {0, 255};
     auto size = 2;
     fieldMatch->set_value(static_cast<char *>(static_cast<void *>(value)), size);
     fieldMatch->set_mask(static_cast<char *>(static_cast<void *>(mask)), size);
@@ -202,6 +209,16 @@ p4::v1::WriteRequest getTableEntryWriteRequest(
 
 p4::v1::TableEntry *getTableEntry(p4::v1::WriteRequest request, int index = 0) {
     return request.mutable_updates()->Mutable(index)->mutable_entity()->mutable_table_entry();
+}
+
+void sendPacket(unsigned int deviceId = DEVICE_ID) {
+    p4::v1::StreamMessageRequest request;
+    auto* packet = request.mutable_packet();
+    auto payload = "Yeah";
+    packet->set_payload(payload);
+    auto* metaData = packet->mutable_metadata()->Add();
+    //metaData->set_metadata_id();
+    streamChannel->Write(request);
 }
 
 

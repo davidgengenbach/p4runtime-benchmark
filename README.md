@@ -39,9 +39,10 @@ table_entry['SwitchIngress.punt_table'].read(print)
 table_entry['SwitchIngress.punt_table'].read(lambda x: x.delete())
     # set_egress_port_static
     # clone_to_cpu
+
 te = table_entry['SwitchIngress.punt_table'](action='set_egress_port_static') 
 te.priority = 1
-te.match['ig_intr_md.ingress_port'] = 0
+te.match['ig_intr_md.ingress_port'] = "0"
 te.insert()
 
 all_te = table_entry['SwitchIngress.punt_table']; all_te.counter_data; all_te.read(print)
